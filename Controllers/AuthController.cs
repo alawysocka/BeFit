@@ -1,4 +1,5 @@
 ﻿using BeFit.Models;
+using BeFit.Models.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -65,7 +66,8 @@ public class AuthController : ControllerBase
             var authClaims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, user.UserName!),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id)
         };
 
             foreach (var userRole in userRoles)

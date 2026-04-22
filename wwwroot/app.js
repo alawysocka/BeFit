@@ -25,6 +25,7 @@ function updateNavigation() {
     const userLinks = document.getElementById('user-links');
     const userNameDisplay = document.getElementById('user-name-display');
     const adminPanelLink = document.getElementById('admin-panel-link');
+    const trainerPanelLink = document.getElementById('trainer-panel-link'); // Pobranie linku trenera
 
     if (claims) {
         const userName = claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
@@ -34,6 +35,7 @@ function updateNavigation() {
         if (userLinks) { userLinks.classList.remove('d-none'); userLinks.classList.add('d-flex'); }
         if (userNameDisplay) userNameDisplay.innerText = userName;
 
+        // Obsługa widoczności Panelu Administratora
         if (adminPanelLink) {
             if (userRole === 'Administrator') {
                 adminPanelLink.classList.remove('d-none');
@@ -41,10 +43,20 @@ function updateNavigation() {
                 adminPanelLink.classList.add('d-none');
             }
         }
+
+        // Obsługa widoczności Panelu Trenera
+        if (trainerPanelLink) {
+            if (userRole === 'Trener') {
+                trainerPanelLink.classList.remove('d-none');
+            } else {
+                trainerPanelLink.classList.add('d-none');
+            }
+        }
     } else {
         if (guestLinks) { guestLinks.classList.remove('d-none'); guestLinks.classList.add('d-flex'); }
         if (userLinks) { userLinks.classList.remove('d-flex'); userLinks.classList.add('d-none'); }
         if (adminPanelLink) adminPanelLink.classList.add('d-none');
+        if (trainerPanelLink) trainerPanelLink.classList.add('d-none'); // Ukrycie po wylogowaniu
     }
 }
 
@@ -151,7 +163,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('token', data.token);
-                window.location.href = 'index.html';
+                // 1. Odkodowanie tokena JWT, aby sprawdzić rolę
+                const payload = JSON.parse(atob(data.token.split('.')[1]));
+
+                // Klucz roli w standardzie Microsoft (ASP.NET Identity)
+                const roleKey = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+                const userRole = payload[roleKey];
+
+                // 2. Inteligentne przekierowanie
+                if (userRole === "Administrator") {
+                    window.location.href = 'admin.html';
+                } else if (userRole === "Trener") {
+                    window.location.href = 'trainer.html'; // Przenosi trenera do jego panelu!
+                } else {
+                    window.location.href = 'index.html'; // Zwykły uczestnik
+                }
             } else {
                 const data = await response.json();
                 showAlert(data.message || 'Błąd logowania.', 'danger', 'logAlerts');

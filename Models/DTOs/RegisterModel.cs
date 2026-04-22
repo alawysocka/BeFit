@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BeFit.Models;
+namespace BeFit.Models.DTOs;
 
 public class RegisterModel
 {

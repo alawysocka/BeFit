@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Trenera - BeFit</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">BeFit | Panel Trenera</a>
+            <div class="d-flex align-items-center">
+                <span class="text-light me-3" id="trainerEmailDisplay"></span>
+                <button class="btn btn-outline-light btn-sm" id="logoutBtn">Wyloguj</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">Dodaj nowe zajęcia</h4>
+                        <div id="trainerAlerts"></div>
+                        <form id="addTrainingForm">
+                            <div class="mb-3">
+                                <label class="form-label">Nazwa zajęć</label>
+                                <input type="text" id="trainingName" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Data</label>
+                                <input type="date" id="trainingDate" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Godzina rozpoczęcia</label>
+                                <input type="time" id="trainingTime" class="form-control" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Limit miejsc</label>
+                                <input type="number" id="trainingCapacity" class="form-control" min="1" max="100" value="15" required>
+                            </div>
+                            <button type="submit" id="addBtn" class="btn btn-primary w-100">Zaplanuj trening</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <h4 class="mb-3">Mój harmonogram</h4>
+                <div class="card shadow-sm border-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nazwa</th>
+                                    <th>Data</th>
+                                    <th>Godzina</th>
+                                    <th>Limit miejsc</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myTrainingsBody">
+                                <tr><td colspan="4" class="text-center text-muted">Ładowanie danych...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editCapacityModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edytuj limit miejsc</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zamknij"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editTrainingId">
+                    <div class="mb-3">
+                        <label class="form-label">Nowy limit miejsc</label>
+                        <input type="number" id="editTrainingCapacity" class="form-control" min="1" max="100">
+                    </div>
+                    <button type="button" id="saveCapacityBtn" class="btn btn-primary w-100">Zapisz zmiany</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="trainer.js"></script>
+
+</body>
+</html>
