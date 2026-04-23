@@ -19,13 +19,95 @@ function showAlert(message, type, containerId) {
     </div>`;
 }
 
+const apiTrainingUrl = 'https://localhost:7140/api/training'; // Adres do kontrolera treningów
+
+async function loadPublicSchedule() {
+    const scheduleBody = document.getElementById('publicScheduleBody');
+    if (!scheduleBody) return;
+
+    // Sprawdzamy rolę aktualnie zalogowanego użytkownika
+    const claims = getClaimsFromToken();
+    let userRole = null;
+    if (claims) {
+        userRole = claims['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    }
+
+    try {
+        const response = await fetch(apiTrainingUrl);
+
+        if (response.ok) {
+            const trainings = await response.json();
+            scheduleBody.innerHTML = '';
+
+            if (trainings.length === 0) {
+                scheduleBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Brak zaplanowanych zajęć.</td></tr>';
+                return;
+            }
+
+            trainings.forEach(t => {
+                // Decydujemy, co pokazać w kolumnie "Akcje"
+                let actionHtml = '';
+                if (userRole === 'Uczestnik') {
+                    // Przycisk tylko dla uczestników
+                    actionHtml = `<button class="btn btn-sm btn-primary" onclick="bookTraining(${t.id})">Zapisz się</button>`;
+                } else if (!userRole) {
+                    // Informacja dla niezalogowanych
+                    actionHtml = `<span class="text-muted small">Zaloguj się, by zapisać</span>`;
+                }
+
+                scheduleBody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold text-primary">${t.name}</td>
+                        <td>👨‍🏫 ${t.trainerName}</td>
+                        <td>📅 ${t.date}</td>
+                        <td>⏰ ${t.time}</td>
+                        <td><span class="badge bg-success rounded-pill">${t.capacity} miejsc</span></td>
+                        <td>${actionHtml}</td> </tr>`;
+            });
+        } else {
+            scheduleBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Nie udało się załadować grafiku.</td></tr>';
+        }
+    } catch (error) {
+        scheduleBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Błąd połączenia z serwerem.</td></tr>';
+    }
+}
+
+
+// Funkcja wysyłająca rezerwację do serwera
+window.bookTraining = async (trainingId) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+        const response = await fetch('https://localhost:7140/api/reservation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Dowód tożsamości
+            },
+            body: JSON.stringify({ trainingId: trainingId })
+        });
+
+        if (response.ok) {
+            showAlert('Pomyślnie zapisano na zajęcia!', 'success', 'indexAlerts');
+            loadPublicSchedule(); // Odświeżamy tabelę, by zaktualizować (lub przeliczyć w przyszłości) limit
+        } else {
+            const data = await response.json();
+            showAlert(data.message || 'Błąd podczas zapisów.', 'danger', 'indexAlerts');
+        }
+    } catch (error) {
+        showAlert('Błąd połączenia z serwerem.', 'danger', 'indexAlerts');
+    }
+};
+
 function updateNavigation() {
     const claims = getClaimsFromToken();
     const guestLinks = document.getElementById('guest-links');
     const userLinks = document.getElementById('user-links');
     const userNameDisplay = document.getElementById('user-name-display');
     const adminPanelLink = document.getElementById('admin-panel-link');
-    const trainerPanelLink = document.getElementById('trainer-panel-link'); // Pobranie linku trenera
+    const trainerPanelLink = document.getElementById('trainer-panel-link');
+    const participantPanelLink = document.getElementById('participant-panel-link'); // Pobierz element
 
     if (claims) {
         const userName = claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
@@ -52,11 +134,23 @@ function updateNavigation() {
                 trainerPanelLink.classList.add('d-none');
             }
         }
+
+        // TUTAJ JEST POPRAWKA: Pokazujemy panel tylko dla Uczestnika
+        if (participantPanelLink) {
+            if (userRole === 'Uczestnik') {
+                participantPanelLink.classList.remove('d-none');
+            } else {
+                participantPanelLink.classList.add('d-none');
+            }
+        }
+
     } else {
+        // Blok dla wylogowanego użytkownika (ukrywamy wszystkie panele)
         if (guestLinks) { guestLinks.classList.remove('d-none'); guestLinks.classList.add('d-flex'); }
         if (userLinks) { userLinks.classList.remove('d-flex'); userLinks.classList.add('d-none'); }
         if (adminPanelLink) adminPanelLink.classList.add('d-none');
-        if (trainerPanelLink) trainerPanelLink.classList.add('d-none'); // Ukrycie po wylogowaniu
+        if (trainerPanelLink) trainerPanelLink.classList.add('d-none');
+        if (participantPanelLink) participantPanelLink.classList.add('d-none'); // Ukrycie panelu uczestnika
     }
 }
 
@@ -67,6 +161,7 @@ function logout() {
 
 document.addEventListener('DOMContentLoaded', () => {
     updateNavigation();
+    loadPublicSchedule();
 
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) logoutBtn.addEventListener('click', logout);

@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moje Rezerwacje - BeFit</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">BeFit | Strona Główna</a>
+            <div class="d-flex align-items-center">
+                <span class="text-light me-3" id="userEmailDisplay"></span>
+                <button class="btn btn-outline-light btn-sm" id="logoutBtn">Wyloguj</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <h2 class="mb-4">Mój harmonogram zajęć</h2>
+                <div id="participantAlerts"></div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Zajęcia</th>
+                                    <th>Prowadzący</th>
+                                    <th>Data</th>
+                                    <th>Godzina</th>
+                                    <th>Akcje</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myReservationsBody">
+                                <tr><td colspan="5" class="text-center text-muted py-4">Ładowanie rezerwacji...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="participant.js"></script>
+</body>
+</html>
