@@ -3,6 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using BeFit.Models;
+using Google.Apis.Auth.OAuth2;
+using Google.Apis.Calendar.v3;
+using Google.Apis.Calendar.v3.Data;
+using Google.Apis.Services;
+using Google.Apis.Auth.OAuth2.Flows;
 
 namespace BeFit.Controllers;
 
@@ -49,6 +54,55 @@ public class ReservationController : ControllerBase
 
         _context.Reservations.Add(reservation);
         await _context.SaveChangesAsync();
+
+        // Odczytanie danych zalogowanego użytkownika
+        var currentUser = await _context.Users.FindAsync(userId);
+
+        // Weryfikacja obecności tokena Google
+        if (currentUser != null && !string.IsNullOrEmpty(currentUser.GoogleRefreshToken))
+        {
+            try
+            {
+                // Konfiguracja autoryzacji
+                var clientSecrets = await GoogleClientSecrets.FromFileAsync("client_secret.json");
+                var credential = new UserCredential(
+                    new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+                    {
+                        ClientSecrets = clientSecrets.Secrets
+                    }),
+                    userId,
+                    new Google.Apis.Auth.OAuth2.Responses.TokenResponse
+                    {
+                        RefreshToken = currentUser.GoogleRefreshToken
+                    });
+
+                // Inicjalizacja serwisu
+                var calendarService = new CalendarService(new BaseClientService.Initializer()
+                {
+                    HttpClientInitializer = credential,
+                    ApplicationName = "BeFit"
+                });
+
+                // Obliczanie czasu rozpoczęcia
+                DateTime eventStart = training.Date.Date + training.Time;
+
+                // Tworzenie struktury wydarzenia
+                var calendarEvent = new Event()
+                {
+                    Summary = $"BeFit: {training.Name}",
+                    Start = new EventDateTime() { DateTime = eventStart, TimeZone = "Europe/Warsaw" },
+                    End = new EventDateTime() { DateTime = eventStart.AddHours(1), TimeZone = "Europe/Warsaw" }
+                };
+
+                // Wysłanie zapytania
+                var request = calendarService.Events.Insert(calendarEvent, "primary");
+                await request.ExecuteAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Problem z API kalendarza: {ex.Message}");
+            }
+        }
 
         return Ok(new { message = "Pomyślnie zapisano na zajęcia!" });
     }

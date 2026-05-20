@@ -21,6 +21,7 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 
 function showAlert(message, type) {
     const container = document.getElementById('participantAlerts');
+    if (!container) return;
     container.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -30,6 +31,7 @@ function showAlert(message, type) {
 // 2. Pobieranie rezerwacji z serwera
 async function loadMyReservations() {
     const tbody = document.getElementById('myReservationsBody');
+    if (!tbody) return;
 
     try {
         const response = await fetch(`${apiReservationUrl}/myreservations`, {
@@ -87,5 +89,34 @@ window.cancelReservation = async (reservationId) => {
     }
 };
 
-// Start
-document.addEventListener('DOMContentLoaded', loadMyReservations);
+// Start i logika Google Calendar
+document.addEventListener('DOMContentLoaded', () => {
+    loadMyReservations();
+
+    // Obsługa komunikatu po powrocie z autoryzacji Google
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('calendar') === 'success') {
+        showAlert('Konto Google zostało pomyślnie połączone!', 'success');
+        window.history.replaceState({}, document.title, window.location.pathname); // Ukrycie parametru z paska
+    }
+
+    // Podpięcie przycisku do autoryzacji
+    const connectCalendarBtn = document.getElementById('connectCalendarBtn');
+    if (connectCalendarBtn) {
+        connectCalendarBtn.addEventListener('click', () => {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                // Odczytanie ID użytkownika (NameIdentifier)
+                const userId = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+
+                if (userId) {
+                    window.location.href = `https://localhost:7140/api/calendar/connect?userId=${userId}`;
+                } else {
+                    showAlert('Nie udało się odczytać identyfikatora użytkownika.', 'danger');
+                }
+            } catch (e) {
+                showAlert('Błąd przetwarzania tokena.', 'danger');
+            }
+        });
+    }
+});

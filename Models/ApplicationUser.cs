@@ -11,6 +11,8 @@ public class ApplicationUser : IdentityUser
     [Required]
     public string LastName { get; set; } = string.Empty;
 
+    public string? GoogleRefreshToken { get; set; }
+
     public ICollection<Training> Trainings { get; set; } = new List<Training>();
     public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 }
