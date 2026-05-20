@@ -8,6 +8,7 @@ using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using Google.Apis.Auth.OAuth2.Flows;
+using System.Security.Claims;
 
 namespace BeFit.Controllers;
 
@@ -133,16 +134,18 @@ public class ReservationController : ControllerBase
 
     // 3. ANULOWANIE: Rezygnacja z zajęć
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Uczestnik")]
     public async Task<IActionResult> CancelReservation(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // Szukamy rezerwacji, upewniając się, że należy do osoby, która chce ją usunąć (Zmieniono na ParticipantId)
-        var reservation = await _context.Reservations
-            .FirstOrDefaultAsync(r => r.Id == id && r.ParticipantId == userId);
+        var reservation = await _context.Reservations.FindAsync(id);
 
         if (reservation == null)
-            return NotFound(new { message = "Nie znaleziono rezerwacji lub nie masz do niej praw." });
+            return NotFound(new { message = "Nie znaleziono rezerwacji." });
+
+        if (reservation.ParticipantId != userId)
+            return Forbid();
 
         _context.Reservations.Remove(reservation);
         await _context.SaveChangesAsync();

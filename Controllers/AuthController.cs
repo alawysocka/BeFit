@@ -2,6 +2,7 @@
 using BeFit.Models.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -29,7 +30,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
         var userExists = await _userManager.FindByEmailAsync(model.Email);
-        if (userExists != null) return BadRequest(new { message = "Adres email jest już zajęty." });
+        if (userExists != null) return BadRequest(new { message = "Błąd" });
 
         ApplicationUser user = new()
         {
@@ -45,7 +46,7 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => e.Description);
-            return BadRequest(new { message = "Błąd walidacji", errors });
+            return BadRequest(new { message = "Błąd", errors });
         }
 
         bool isTrainer = _context.Trainers.Any(t => t.Email == model.Email);
@@ -56,12 +57,22 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Konto utworzone." });
     }
 
+    [EnableRateLimiting("LoginLimiter")]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
         {
+            // --- ZAPIS LOGU: SUKCES ---
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserId = user.Id,
+                Action = "Logowanie",
+                Details = "Zalogowano z powodzeniem."
+            });
+            await _context.SaveChangesAsync();
+
             var userRoles = await _userManager.GetRolesAsync(user);
             var authClaims = new List<Claim>
         {
@@ -86,6 +97,19 @@ public class AuthController : ControllerBase
 
             return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
         }
+
+        // --- ZAPIS LOGU: BŁĄD ---
+        if (user != null)
+        {
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserId = user.Id,
+                Action = "Błąd logowania",
+                Details = "Podano błędne hasło."
+            });
+            await _context.SaveChangesAsync();
+        }
+
         return Unauthorized(new { message = "Nieprawidłowy email lub hasło." });
     }
 }

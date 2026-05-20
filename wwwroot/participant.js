@@ -1,5 +1,13 @@
 ﻿const apiReservationUrl = 'https://localhost:7140/api/reservation';
 
+
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag]));
+}
+
 // 1. Sprawdzenie logowania
 const token = localStorage.getItem('token');
 if (!token) {
@@ -46,6 +54,8 @@ async function loadMyReservations() {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nie jesteś zapisany na żadne zajęcia.</td></tr>';
                 return;
             }
+            const safeName = escapeHTML(r.trainingName);
+            const safeTrainer = escapeHTML(r.trainerName);
 
             reservations.forEach(r => {
                 tbody.innerHTML += `

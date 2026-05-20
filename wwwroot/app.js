@@ -1,5 +1,13 @@
 ﻿const apiUrl = 'https://localhost:7140/api/auth';
 
+
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag]));
+}
+
 function getClaimsFromToken() {
     const token = localStorage.getItem('token');
     if (!token) return null;
@@ -54,6 +62,8 @@ async function loadPublicSchedule() {
                     // Informacja dla niezalogowanych
                     actionHtml = `<span class="text-muted small">Zaloguj się, by zapisać</span>`;
                 }
+                const safeName = escapeHTML(t.name);
+                const safeTrainer = escapeHTML(t.trainerName);
 
                 scheduleBody.innerHTML += `
                     <tr>

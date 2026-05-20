@@ -112,10 +112,13 @@ public class TrainingController : ControllerBase
     {
         var trainerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var training = await _context.Trainings.FirstOrDefaultAsync(t => t.Id == id && t.TrainerId == trainerId);
+        var training = await _context.Trainings.FindAsync(id);
 
         if (training == null)
-            return NotFound(new { message = "Nie znaleziono treningu lub nie masz do niego praw." });
+            return NotFound(new { message = "Nie znaleziono treningu." });
+
+        if (training.TrainerId != trainerId)
+            return Forbid();
 
         _context.Trainings.Remove(training);
         await _context.SaveChangesAsync();
