@@ -1,4 +1,4 @@
-﻿const apiTrainingUrl = 'https://localhost:7140/api/training'; // W razie potrzeby zaktualizuj port
+﻿const apiTrainingUrl = 'https://localhost:7140/api/training'; 
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
     localStorage.removeItem('token');
@@ -68,7 +68,7 @@ document.getElementById('addTrainingForm').addEventListener('submit', async (e) 
     const btn = document.getElementById('addBtn');
     btn.disabled = true;
 
-    // C# wymaga pełnego formatu TimeSpan (hh:mm:ss), dlatego dodajemy ":00" do godziny
+ 
     const newTraining = {
         name: document.getElementById('trainingName').value,
         date: document.getElementById('trainingDate').value,
@@ -105,7 +105,7 @@ document.getElementById('addTrainingForm').addEventListener('submit', async (e) 
 
 document.addEventListener('DOMContentLoaded', loadMyTrainings);
 
-// Globalna funkcja do usuwania
+
 window.deleteTraining = async (id) => {
     if (!confirm('Czy na pewno chcesz odwołać i usunąć te zajęcia?')) return;
 
@@ -117,7 +117,7 @@ window.deleteTraining = async (id) => {
 
         if (response.ok) {
             showAlert('Zajęcia zostały usunięte.', 'success');
-            loadMyTrainings(); // Odświeżenie tabeli
+            loadMyTrainings(); 
         } else {
             const data = await response.json();
             showAlert(data.message || 'Błąd podczas usuwania.', 'danger');
@@ -127,14 +127,14 @@ window.deleteTraining = async (id) => {
     }
 };
 
-// Logika okienka Modal (Edycja)
+// Edytownie
 let editModal;
 
 window.openEditModal = (id, currentCapacity) => {
     document.getElementById('editTrainingId').value = id;
     document.getElementById('editTrainingCapacity').value = currentCapacity;
 
-    // Inicjalizacja modala z Bootstrapa i jego otwarcie
+  
     editModal = new bootstrap.Modal(document.getElementById('editCapacityModal'));
     editModal.show();
 };
@@ -157,12 +157,12 @@ document.getElementById('saveCapacityBtn').addEventListener('click', async () =>
         });
 
         if (response.ok) {
-            editModal.hide(); // Zamknięcie okienka
+            editModal.hide(); 
             showAlert('Pomyślnie zaktualizowano limit miejsc.', 'success');
-            loadMyTrainings(); // Odświeżenie tabeli
+            loadMyTrainings(); 
         } else {
             const data = await response.json();
-            alert(data.message || 'Błąd edycji.'); // Prosty alert wewnątrz modala
+            alert(data.message || 'Błąd edycji.'); 
         }
     } catch (error) {
         alert('Błąd połączenia z serwerem.');

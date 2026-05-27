@@ -19,7 +19,7 @@ public class CalendarController : ControllerBase
         _context = context;
     }
 
-    // 1. Inicjacja połączenia z Google
+    // Inicjacja połączenia z Google
     [HttpGet("connect")]
     public async Task<IActionResult> Connect([FromQuery] string userId)
     {
@@ -31,21 +31,21 @@ public class CalendarController : ControllerBase
         var flow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
         {
             ClientSecrets = clientSecrets.Secrets,
-            Scopes = new[] { CalendarService.Scope.Calendar } // Prośba o dostęp do kalendarza
+            Scopes = new[] { CalendarService.Scope.Calendar } 
         });
 
-        // Dodane rzutowanie z poprzedniej poprawki
+
         var authorizationUrl = (GoogleAuthorizationCodeRequestUrl)flow.CreateAuthorizationCodeRequest(_redirectUri);
 
         authorizationUrl.State = userId;
         authorizationUrl.AccessType = "offline";
         authorizationUrl.Prompt = "consent";
 
-        // TEJ LINIJKI BRAKOWAŁO: Przekierowanie użytkownika do Google
+
         return Redirect(authorizationUrl.Build().ToString());
     }
 
-    // 2. Punkt zwrotny, do którego Google odsyła użytkownika
+    // Punkt zwrotny, do którego Google odsyła użytkownika
     [HttpGet("callback")]
     public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string state)
     {
@@ -63,7 +63,7 @@ public class CalendarController : ControllerBase
 
         var tokenResponse = await flow.ExchangeCodeForTokenAsync(userId, code, _redirectUri, CancellationToken.None);
 
-        // Zapis do bazy danych
+
         var user = await _context.Users.FindAsync(userId);
         if (user != null && !string.IsNullOrEmpty(tokenResponse.RefreshToken))
         {

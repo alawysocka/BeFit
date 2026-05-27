@@ -17,13 +17,13 @@ public class TrainingController : ControllerBase
         _context = context;
     }
 
-    // 1. ODCZYT: Pobranie wszystkich treningów (dostępne dla każdego)
+    // Pobranie wszystkich treningów (dostępne dla każdego)
     [HttpGet]
     public async Task<IActionResult> GetAllTrainings()
     {
         var trainings = await _context.Trainings
             .Include(t => t.Trainer)
-            .OrderBy(t => t.Date).ThenBy(t => t.Time) // Sortowanie chronologiczne
+            .OrderBy(t => t.Date).ThenBy(t => t.Time) 
             .Select(t => new {
                 t.Id,
                 t.Name,
@@ -37,7 +37,7 @@ public class TrainingController : ControllerBase
         return Ok(trainings);
     }
 
-    // 2. ZAPIS: Dodawanie nowego treningu (TYLKO DLA TRENERÓW)
+    // Dodawanie nowego treningu (TYLKO DLA TRENERÓW)
     [HttpPost]
     [Authorize(Roles = "Trener")]
     public async Task<IActionResult> CreateTraining([FromBody] CreateTrainingModel model)
@@ -54,7 +54,7 @@ public class TrainingController : ControllerBase
             Date = model.Date,
             Time = model.Time,
             Capacity = model.Capacity,
-            TrainerId = trainerId // Przypisanie bez pytania frontendu o zdanie
+            TrainerId = trainerId 
         };
 
         _context.Trainings.Add(training);
@@ -63,7 +63,7 @@ public class TrainingController : ControllerBase
         return Ok(new { message = "Trening został pomyślnie dodany do grafiku." });
     }
 
-    // 3. ODCZYT: Pobieranie treningów zalogowanego trenera (Do zarządzania w panelu)
+    // Pobieranie treningów zalogowanego trenera (Do zarządzania w panelu)
     [HttpGet("mytrainings")]
     [Authorize(Roles = "Trener")]
     public async Task<IActionResult> GetMyTrainings()
@@ -86,14 +86,14 @@ public class TrainingController : ControllerBase
     }
 
 
-    // 4. AKTUALIZACJA: Zmiana limitu miejsc (TYLKO DLA WŁAŚCICIELA)
+    //  Zmiana limitu miejsc (TYLKO DLA WŁAŚCICIELA)
     [HttpPut("{id}")]
     [Authorize(Roles = "Trener")]
     public async Task<IActionResult> EditTrainingCapacity(int id, [FromBody] EditTrainingModel model)
     {
         var trainerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // Szukamy treningu o danym ID, ale TYLKO takiego, który należy do tego konkretnego trenera
+        // Szukamy treningu o danym ID, ale tylko takiego, który należy do tego konkretnego trenera
         var training = await _context.Trainings.FirstOrDefaultAsync(t => t.Id == id && t.TrainerId == trainerId);
 
         if (training == null)
@@ -105,7 +105,7 @@ public class TrainingController : ControllerBase
         return Ok(new { message = "Limit miejsc został zaktualizowany." });
     }
 
-    // 5. USUWANIE: Odwołanie zajęć (TYLKO DLA WŁAŚCICIELA)
+    // Odwołanie zajęć (TYLKO DLA WŁAŚCICIELA)
     [HttpDelete("{id}")]
     [Authorize(Roles = "Trener")]
     public async Task<IActionResult> DeleteTraining(int id)

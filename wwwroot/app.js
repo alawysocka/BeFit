@@ -93,14 +93,14 @@ window.bookTraining = async (trainingId) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Dowód tożsamości
+                'Authorization': `Bearer ${token}` 
             },
             body: JSON.stringify({ trainingId: trainingId })
         });
 
         if (response.ok) {
             showAlert('Pomyślnie zapisano na zajęcia!', 'success', 'indexAlerts');
-            loadPublicSchedule(); // Odświeżamy tabelę, by zaktualizować (lub przeliczyć w przyszłości) limit
+            loadPublicSchedule(); 
         } else {
             const data = await response.json();
             showAlert(data.message || 'Błąd podczas zapisów.', 'danger', 'indexAlerts');
@@ -117,7 +117,7 @@ function updateNavigation() {
     const userNameDisplay = document.getElementById('user-name-display');
     const adminPanelLink = document.getElementById('admin-panel-link');
     const trainerPanelLink = document.getElementById('trainer-panel-link');
-    const participantPanelLink = document.getElementById('participant-panel-link'); // Pobierz element
+    const participantPanelLink = document.getElementById('participant-panel-link'); 
 
     if (claims) {
         const userName = claims['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
@@ -145,7 +145,7 @@ function updateNavigation() {
             }
         }
 
-        // TUTAJ JEST POPRAWKA: Pokazujemy panel tylko dla Uczestnika
+        // Pokazujemy panel tylko dla Uczestnika
         if (participantPanelLink) {
             if (userRole === 'Uczestnik') {
                 participantPanelLink.classList.remove('d-none');
@@ -160,7 +160,7 @@ function updateNavigation() {
         if (userLinks) { userLinks.classList.remove('d-flex'); userLinks.classList.add('d-none'); }
         if (adminPanelLink) adminPanelLink.classList.add('d-none');
         if (trainerPanelLink) trainerPanelLink.classList.add('d-none');
-        if (participantPanelLink) participantPanelLink.classList.add('d-none'); // Ukrycie panelu uczestnika
+        if (participantPanelLink) participantPanelLink.classList.add('d-none'); 
     }
 }
 
@@ -268,18 +268,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('token', data.token);
-                // 1. Odkodowanie tokena JWT, aby sprawdzić rolę
+                // Odkodowanie tokena JWT, aby sprawdzić rolę
                 const payload = JSON.parse(atob(data.token.split('.')[1]));
 
-                // Klucz roli w standardzie Microsoft (ASP.NET Identity)
+                // Klucz roli 
                 const roleKey = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
                 const userRole = payload[roleKey];
 
-                // 2. Inteligentne przekierowanie
+                // przekierowanie
                 if (userRole === "Administrator") {
                     window.location.href = 'admin.html';
                 } else if (userRole === "Trener") {
-                    window.location.href = 'trainer.html'; // Przenosi trenera do jego panelu!
+                    window.location.href = 'trainer.html'; // Przenosi trenera do jego panelu
                 } else {
                     window.location.href = 'index.html'; // Zwykły uczestnik
                 }

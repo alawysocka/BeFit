@@ -24,13 +24,13 @@ public class ReservationController : ControllerBase
         _context = context;
     }
 
-    // 1. ZAPISYWANIE: Dodanie nowej rezerwacji
+    // Dodanie nowej rezerwacji
     [HttpPost]
     public async Task<IActionResult> BookTraining([FromBody] BookTrainingModel model)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // Pobieramy trening wraz z listą obecnych rezerwacji
+        
         var training = await _context.Trainings
             .Include(t => t.Reservations)
             .FirstOrDefaultAsync(t => t.Id == model.TrainingId);
@@ -38,19 +38,19 @@ public class ReservationController : ControllerBase
         if (training == null)
             return NotFound(new { message = "Wybrane zajęcia nie istnieją." });
 
-        // LOGIKA BIZNESOWA: Czy jest już zapisany? (Zmieniono na ParticipantId)
+       
         if (training.Reservations.Any(r => r.ParticipantId == userId))
             return BadRequest(new { message = "Jesteś już zapisany na te zajęcia." });
 
-        // LOGIKA BIZNESOWA: Czy są wolne miejsca?
+       
         if (training.Reservations.Count >= training.Capacity)
             return BadRequest(new { message = "Brak wolnych miejsc na te zajęcia." });
 
-        // Wszystko się zgadza - tworzymy rezerwację dopasowaną do Twojego modelu
+        
         var reservation = new Reservation
         {
             TrainingId = model.TrainingId,
-            ParticipantId = userId // Używamy Twojej nazwy pola
+            ParticipantId = userId 
         };
 
         _context.Reservations.Add(reservation);
@@ -108,16 +108,16 @@ public class ReservationController : ControllerBase
         return Ok(new { message = "Pomyślnie zapisano na zajęcia!" });
     }
 
-    // 2. ODCZYT: Pobieranie rezerwacji zalogowanego użytkownika (Mój Profil)
+    // Pobieranie rezerwacji zalogowanego użytkownika (Mój Profil)
     [HttpGet("myreservations")]
     public async Task<IActionResult> GetMyReservations()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         var reservations = await _context.Reservations
-            .Where(r => r.ParticipantId == userId) // Zmieniono na ParticipantId
+            .Where(r => r.ParticipantId == userId) 
             .Include(r => r.Training)
-            .ThenInclude(t => t.Trainer) // Dociągamy też dane trenera
+            .ThenInclude(t => t.Trainer) 
             .OrderBy(r => r.Training.Date).ThenBy(r => r.Training.Time)
             .Select(r => new {
                 ReservationId = r.Id,
@@ -132,7 +132,7 @@ public class ReservationController : ControllerBase
         return Ok(reservations);
     }
 
-    // 3. ANULOWANIE: Rezygnacja z zajęć
+    // Rezygnacja z zajęć
     [HttpDelete("{id}")]
     [Authorize(Roles = "Uczestnik")]
     public async Task<IActionResult> CancelReservation(int id)

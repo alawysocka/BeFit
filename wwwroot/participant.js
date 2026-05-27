@@ -8,7 +8,7 @@ function escapeHTML(str) {
     }[tag]));
 }
 
-// 1. Sprawdzenie logowania
+// Sprawdzenie logowania
 const token = localStorage.getItem('token');
 if (!token) {
     window.location.href = 'login.html';
@@ -36,7 +36,7 @@ function showAlert(message, type) {
     </div>`;
 }
 
-// 2. Pobieranie rezerwacji z serwera
+//  Pobieranie rezerwacji z serwera
 async function loadMyReservations() {
     const tbody = document.getElementById('myReservationsBody');
     if (!tbody) return;
@@ -81,7 +81,7 @@ async function loadMyReservations() {
     }
 }
 
-// 3. Usuwanie rezerwacji (Rezygnacja)
+//Usuwanie rezerwacji 
 window.cancelReservation = async (reservationId) => {
     if (!confirm('Czy na pewno chcesz zrezygnować z tych zajęć?')) return;
 
@@ -93,7 +93,7 @@ window.cancelReservation = async (reservationId) => {
 
         if (response.ok) {
             showAlert('Pomyślnie zrezygnowano z zajęć. Miejsce wróciło do puli.', 'success');
-            loadMyReservations(); // Odświeżenie tabeli
+            loadMyReservations(); 
         } else {
             const data = await response.json();
             showAlert(data.message || 'Błąd podczas rezygnacji.', 'danger');
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('calendar') === 'success') {
         showAlert('Konto Google zostało pomyślnie połączone!', 'success');
-        window.history.replaceState({}, document.title, window.location.pathname); // Ukrycie parametru z paska
+        window.history.replaceState({}, document.title, window.location.pathname); 
     }
 
     // Podpięcie przycisku do autoryzacji
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         connectCalendarBtn.addEventListener('click', () => {
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
-                // Odczytanie ID użytkownika (NameIdentifier)
+                // Odczytanie ID użytkownika 
                 const userId = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
 
                 if (userId) {
