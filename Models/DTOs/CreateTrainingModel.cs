@@ -4,7 +4,8 @@ namespace BeFit.Models;
 
 public class CreateTrainingModel
 {
-    [Required(ErrorMessage = "Nazwa zajęć jest wymagana.")]
+    [Required(ErrorMessage = "Błędna nazwa")]
+    [RegularExpression(@"^[^<>]*$", ErrorMessage = "Błędna nazwa")]
     public string Name { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Data jest wymagana.")]

@@ -54,21 +54,25 @@ async function loadMyReservations() {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Nie jesteś zapisany na żadne zajęcia.</td></tr>';
                 return;
             }
-            const safeName = escapeHTML(r.trainingName);
-            const safeTrainer = escapeHTML(r.trainerName);
+            
 
             reservations.forEach(r => {
+              
+                const safeName = escapeHTML(r.trainingName);
+                const safeTrainer = escapeHTML(r.trainerName);
+
                 tbody.innerHTML += `
-                    <tr>
-                        <td class="fw-bold">${r.trainingName}</td>
-                        <td>${r.trainerName}</td>
-                        <td>${r.date}</td>
-                        <td>${r.time}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-danger" onclick="cancelReservation(${r.reservationId})">Zrezygnuj</button>
-                        </td>
-                    </tr>`;
+        <tr>
+            <td class="fw-bold">${safeName}</td>
+            <td>${safeTrainer}</td>
+            <td>${r.date}</td>
+            <td>${r.time}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-danger" onclick="cancelReservation(${r.reservationId})">Zrezygnuj</button>
+            </td>
+        </tr>`;
             });
+
         } else {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Błąd ładowania danych.</td></tr>';
         }

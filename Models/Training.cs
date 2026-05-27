@@ -9,9 +9,11 @@ public class Training
     public int Id { get; set; }
 
     [Required]
+    [MaxLength(100, ErrorMessage = "Nazwa przekracza limit znaków.")]
     public string Name { get; set; } = string.Empty;
 
     [Required]
+    [DataType(DataType.Date)]
     public DateTime Date { get; set; }
 
     [Required]

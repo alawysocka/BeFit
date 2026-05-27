@@ -20,13 +20,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Polityka hase³
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequiredLength = 8;
 
-    // Blokada konta
+    options.Password.RequireDigit = true;           // Wymaga minimum 1 cyfry
+    options.Password.RequireLowercase = true;       // Wymaga minimum 1 ma³ej litery
+    options.Password.RequireUppercase = true;       // Wymaga minimum 1 du¿ej litery
+    options.Password.RequireNonAlphanumeric = true; // Wymaga znaku specjalnego (np. !, @, #)
+    options.Password.RequiredLength = 8;            // Minimalna d³ugoœæ: 8 znaków
+
+    // Zabezpieczenie przed duplikacj¹ to¿samoœci
+    options.User.RequireUniqueEmail = true;
+
+
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     options.Lockout.MaxFailedAccessAttempts = 3;
     options.Lockout.AllowedForNewUsers = true;
@@ -72,7 +76,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("https://localhost:7140") // Wpisz dok³adny adres swojego frontendu
+        policy.WithOrigins("https://localhost:7140") 
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -91,16 +95,29 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+else
 {
     app.MapOpenApi();
 }
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+
+    await next();
+});
 
 using (var scope = app.Services.CreateScope())
 {
     await RoleSeeder.SeedRolesAsync(scope.ServiceProvider);
 }
+
 app.UseCors("AllowFrontend");
 app.UseDefaultFiles();
 app.UseStaticFiles();
@@ -114,6 +131,19 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        // Wywo³anie zewnêtrznej klasy inicjalizuj¹cej
+        await BeFit.Data.RoleSeeder.SeedRolesAsync(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Wyst¹pi³ b³¹d podczas inicjalizacji bazy danych.");
+    }
+}
 
 app.Run();
