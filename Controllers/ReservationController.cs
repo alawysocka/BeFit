@@ -14,7 +14,7 @@ namespace BeFit.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = "Uczestnik")] // Tylko klienci mogą rezerwować miejsca
+[Authorize(Roles = "Uczestnik")] 
 public class ReservationController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
@@ -24,7 +24,7 @@ public class ReservationController : ControllerBase
         _context = context;
     }
 
-    // Dodanie nowej rezerwacji
+
     [HttpPost]
     public async Task<IActionResult> BookTraining([FromBody] BookTrainingModel model)
     {
@@ -108,7 +108,6 @@ public class ReservationController : ControllerBase
         return Ok(new { message = "Pomyślnie zapisano na zajęcia!" });
     }
 
-    // Pobieranie rezerwacji zalogowanego użytkownika (Mój Profil)
     [HttpGet("myreservations")]
     public async Task<IActionResult> GetMyReservations()
     {
@@ -132,7 +131,7 @@ public class ReservationController : ControllerBase
         return Ok(reservations);
     }
 
-    // Rezygnacja z zajęć
+
     [HttpDelete("{id}")]
     [Authorize(Roles = "Uczestnik")]
     public async Task<IActionResult> CancelReservation(int id)

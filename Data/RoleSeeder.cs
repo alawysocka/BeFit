@@ -14,7 +14,7 @@ public static class RoleSeeder
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        // Pobranie konfiguracji
+
         var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
         string[] roleNames = { "Administrator", "Trener", "Uczestnik" };
@@ -27,7 +27,6 @@ public static class RoleSeeder
             }
         }
 
-        // Odczyt danych z pliku appsettings.json
         var adminEmail = configuration["AdminSettings:Email"];
         var adminPassword = configuration["AdminSettings:Password"];
 

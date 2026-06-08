@@ -64,7 +64,7 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
         {
-            // --- ZAPIS LOGU: SUKCES ---
+
             _context.AuditLogs.Add(new AuditLog
             {
                 UserId = user.Id,
@@ -98,7 +98,7 @@ public class AuthController : ControllerBase
             return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
         }
 
-        // --- ZAPIS LOGU: BŁĄD ---
+       
         if (user != null)
         {
             _context.AuditLogs.Add(new AuditLog

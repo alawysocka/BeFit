@@ -27,13 +27,13 @@ function showAlert(message, type, containerId) {
     </div>`;
 }
 
-const apiTrainingUrl = 'https://localhost:7140/api/training'; // Adres do kontrolera treningów
+const apiTrainingUrl = 'https://localhost:7140/api/training'; 
 
 async function loadPublicSchedule() {
     const scheduleBody = document.getElementById('publicScheduleBody');
     if (!scheduleBody) return;
 
-    // Sprawdzamy rolę aktualnie zalogowanego użytkownika
+
     const claims = getClaimsFromToken();
     let userRole = null;
     if (claims) {
@@ -53,13 +53,11 @@ async function loadPublicSchedule() {
             }
 
             trainings.forEach(t => {
-                // Decydujemy, co pokazać w kolumnie "Akcje"
+
                 let actionHtml = '';
                 if (userRole === 'Uczestnik') {
-                    // Przycisk tylko dla uczestników
                     actionHtml = `<button class="btn btn-sm btn-primary" onclick="bookTraining(${t.id})">Zapisz się</button>`;
                 } else if (!userRole) {
-                    // Informacja dla niezalogowanych
                     actionHtml = `<span class="text-muted small">Zaloguj się, by zapisać</span>`;
                 }
                 const safeName = escapeHTML(t.name);

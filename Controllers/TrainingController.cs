@@ -17,7 +17,6 @@ public class TrainingController : ControllerBase
         _context = context;
     }
 
-    // Pobranie wszystkich treningów (dostępne dla każdego)
     [HttpGet]
     public async Task<IActionResult> GetAllTrainings()
     {
@@ -37,12 +36,12 @@ public class TrainingController : ControllerBase
         return Ok(trainings);
     }
 
-    // Dodawanie nowego treningu (TYLKO DLA TRENERÓW)
+
     [HttpPost]
     [Authorize(Roles = "Trener")]
     public async Task<IActionResult> CreateTraining([FromBody] CreateTrainingModel model)
     {
-        // Bezpieczne pobranie ID trenera bezpośrednio z zaszyfrowanego tokena JWT
+        // pobranie ID trenera bezpośrednio z zaszyfrowanego tokena JWT
         var trainerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (trainerId == null)
@@ -63,7 +62,7 @@ public class TrainingController : ControllerBase
         return Ok(new { message = "Trening został pomyślnie dodany do grafiku." });
     }
 
-    // Pobieranie treningów zalogowanego trenera (Do zarządzania w panelu)
+
     [HttpGet("mytrainings")]
     [Authorize(Roles = "Trener")]
     public async Task<IActionResult> GetMyTrainings()
@@ -86,14 +85,12 @@ public class TrainingController : ControllerBase
     }
 
 
-    //  Zmiana limitu miejsc (TYLKO DLA WŁAŚCICIELA)
     [HttpPut("{id}")]
     [Authorize(Roles = "Trener")]
     public async Task<IActionResult> EditTrainingCapacity(int id, [FromBody] EditTrainingModel model)
     {
         var trainerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // Szukamy treningu o danym ID, ale tylko takiego, który należy do tego konkretnego trenera
         var training = await _context.Trainings.FirstOrDefaultAsync(t => t.Id == id && t.TrainerId == trainerId);
 
         if (training == null)
@@ -105,7 +102,6 @@ public class TrainingController : ControllerBase
         return Ok(new { message = "Limit miejsc został zaktualizowany." });
     }
 
-    // Odwołanie zajęć (TYLKO DLA WŁAŚCICIELA)
     [HttpDelete("{id}")]
     [Authorize(Roles = "Trener")]
     public async Task<IActionResult> DeleteTraining(int id)
